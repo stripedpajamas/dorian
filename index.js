@@ -18,7 +18,8 @@ const mongoStorage = require('botkit-storage-mongo')({mongoUri: process.env.mong
 const url = require('url');
 const freshservice = require('./lib/freshservice');
 const request = require('request');
-const eventEmitter = new require('events').EventEmitter();
+const events = require('events');
+const eventEmitter = new events.EventEmitter();
 
 const connectionInfo = {
   slackClientID: process.env.slackClientID,
