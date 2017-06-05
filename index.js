@@ -129,7 +129,7 @@ controller.on('rtm_open', (bot) => {
         {
           fallback: alert,
           callback_id: 'alertResponse',
-          text: alert,
+          title: alert,
           actions: [
             {
               name: 'reset',
@@ -173,7 +173,7 @@ controller.on('interactive_message_callback', function(bot, message) {
         attachments: [
           {
             fallback: 'Alert reset',
-            text: message.original_message.attachments[0].text,
+            text: message.original_message.attachments[0].title,
             color: 'good',
             fields: [{
               title: `Alert has been reset${buttonPresser ? ' by ' + buttonPresser : '!'}`
@@ -184,8 +184,8 @@ controller.on('interactive_message_callback', function(bot, message) {
     } else if (message.actions[0].value === 'ticket') {
       const ticketObject = {
         helpdesk_ticket: {
-          description: message.original_message.attachments[0].text,
-          subject: message.original_message.attachments[0].text,
+          description: message.original_message.attachments[0].title,
+          subject: message.original_message.attachments[0].title,
           email: 'noreply@dattobackup.com',
           priority: 1,
           status: 2,
@@ -205,7 +205,7 @@ controller.on('interactive_message_callback', function(bot, message) {
             attachments: [
               {
                 fallback: 'Ticket created',
-                text: message.original_message.attachments[0].text,
+                text: message.original_message.attachments[0].title,
                 color: 'good',
                 fields: [{
                   title: `Alert made into a ticket${buttonPresser ? ' by ' + buttonPresser : '!'}`,
