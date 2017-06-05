@@ -29,7 +29,7 @@ const connectionInfo = {
 };
 const controller = Botkit.slackbot({
   storage: mongoStorage,
-  debug: true,
+  debug: false,
 }).configureSlackApp({
   clientId: connectionInfo.slackClientID,
   clientSecret: connectionInfo.slackClientSecret,
@@ -124,11 +124,12 @@ controller.on('rtm_open', (bot) => {
       username: 'dorian',
       icon_emoji: ':panda_face:',
       channel: alertsChannel.id,
-      text: alert, // text from webhook will go here
+      text: 'Datto Alert Received', // text from webhook will go here
       attachments: [
         {
-          fallback: "New Datto Alert!",
+          fallback: alert,
           callback_id: 'alertResponse',
+          text: alert,
           actions: [
             {
               name: 'reset',
@@ -172,12 +173,11 @@ controller.on('interactive_message_callback', function(bot, message) {
         attachments: [
           {
             fallback: 'Alert reset',
-            title: message.original_message.attachments[0].title,
             text: message.original_message.attachments[0].text,
             color: 'good',
-            fields: message.original_message.attachments[0].fields.concat({
+            fields: [{
               title: `Alert has been reset${buttonPresser ? ' by ' + buttonPresser : '!'}`
-            }),
+            }],
           }
         ]
       });
@@ -185,7 +185,7 @@ controller.on('interactive_message_callback', function(bot, message) {
       const ticketObject = {
         helpdesk_ticket: {
           description: message.original_message.attachments[0].text,
-          subject: message.original_message.attachments[0].title,
+          subject: message.original_message.attachments[0].text,
           email: 'noreply@dattobackup.com',
           priority: 1,
           status: 2,
@@ -205,13 +205,12 @@ controller.on('interactive_message_callback', function(bot, message) {
             attachments: [
               {
                 fallback: 'Ticket created',
-                title: message.original_message.attachments[0].title,
                 text: message.original_message.attachments[0].text,
                 color: 'good',
-                fields: message.original_message.attachments[0].fields.concat({
+                fields: [{
                   title: `Alert made into a ticket${buttonPresser ? ' by ' + buttonPresser : '!'}`,
                   value: 'https://' + fs_host + '/helpdesk/tickets/' + body.item.helpdesk_ticket.display_id
-                }),
+                }],
               }
             ]
           });
