@@ -124,6 +124,7 @@ controller.on('rtm_open', (bot) => {
       username: 'dorian',
       icon_emoji: ':panda_face:',
       channel: alertsChannel.id,
+      color: 'danger',
       text: 'Datto Alert Received', // text from webhook will go here
       attachments: [
         {
