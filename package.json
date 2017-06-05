@@ -1,0 +1,33 @@
+{
+  "name": "dorian",
+  "version": "0.0.1",
+  "dependencies": {
+    "botkit": "^0.5.4",
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "botkit-storage-mongo": "^1.0.6",
+    "request": "^2.81.0",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "dotenv": "^4.0.0"
+  },
+  "description": "convert datto screenshot errors into interactive slack messages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stripedpajamas/dorian.git"
+  },
+  "keywords": [
+    "slack"
+  ],
+  "author": "peter squicciarini",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stripedpajamas/dorian/issues"
+  },
+  "homepage": "https://github.com/stripedpajamas/dorian#readme"
+}
