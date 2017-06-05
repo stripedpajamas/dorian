@@ -21,8 +21,6 @@ const request = require('request');
 const events = require('events');
 const eventEmitter = new events.EventEmitter();
 
-const channelList = {};
-
 const connectionInfo = {
   slackClientID: process.env.slackClientID,
   slackClientSecret: process.env.slackClientSecret,
@@ -105,22 +103,17 @@ controller.storage.teams.all((err, teams) => {
 controller.on('rtm_open', (bot) => {
   winston.log('info', '** The RTM api just connected!');
 
+  const channelList = [];
   let alertsChannel;
 
   bot.api.channels.list({}, (err, response) => {
-    if (err) {
-      console.log('Could not get channels');
-    }
-    console.log('Got channel list!');
     if (response.hasOwnProperty('channels') && response.ok) {
-      console.log('Gonna get some channel stuffs.');
       const total = response.channels.length;
       for (let i = 0; i < total; i++) {
         const channel = response.channels[i];
-        channelList[bot.config.token].push({name: channel.name, id: channel.id});
+        channelList.push({ name: channel.name, id: channel.id });
       }
-      console.log('final channel list:', JSON.stringify(channelList));
-      alertsChannel = channelList[bot.config.token].find(ch => ch.name === 'alerts');
+      alertsChannel = channelList.find(ch => ch.name === 'alerts');
     }
   });
 
