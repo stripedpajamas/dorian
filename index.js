@@ -21,6 +21,8 @@ const request = require('request');
 const events = require('events');
 const eventEmitter = new events.EventEmitter();
 
+const channelList = {};
+
 const connectionInfo = {
   slackClientID: process.env.slackClientID,
   slackClientSecret: process.env.slackClientSecret,
@@ -59,6 +61,7 @@ app.post('/datto', (req, res) => {
   if (req.body && req.body.authentication && req.body.authentication === process.env.dattoAPIKey) {
     eventEmitter.emit('dattoAlert', req.body && req.body.dattoalert);
   }
+  res.send('Thanks!');
 });
 
 // just a simple way to make sure we don't
@@ -75,6 +78,15 @@ controller.on('create_bot', (bot) => {
     bot.startRTM((err) => {
       if (!err) {
         trackBot(bot);
+        bot.api.channels.list({}, (err, response) => {
+          if (response.hasOwnProperty('channels') && response.ok) {
+            const total = response.channels.length;
+            for (let i = 0; i < total; i++) {
+              const channel = response.channels[i];
+              channelList[bot.config.token].push({name: channel.name, id: channel.id});
+            }
+          }
+        });
       }
     });
   }
@@ -101,11 +113,14 @@ controller.storage.teams.all((err, teams) => {
 controller.on('rtm_open', (bot) => {
   winston.log('info', '** The RTM api just connected!');
 
+  const alertsChannel = channelList[bot.config.token].find(ch => ch.name === 'alerts');
+
   // Handle listening for Zapier webhook'd Datto event here and replying
   eventEmitter.on('dattoAlert', (alert) => {
     const msgTemplate = {
       username: 'dorian',
       icon_emoji: ':panda_face:',
+      channel: alertsChannel.id,
       text: alert, // text from webhook will go here
       attachments: [
         {
