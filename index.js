@@ -18,6 +18,7 @@ const mongoStorage = require('botkit-storage-mongo')({mongoUri: process.env.mong
 const url = require('url');
 const freshservice = require('./lib/freshservice');
 const request = require('request');
+const eventEmitter = new require('events').EventEmitter;
 
 const connectionInfo = {
   slackClientID: process.env.slackClientID,
@@ -43,7 +44,7 @@ app.listen(process.env.PORT, () => {
   winston.log(`** Starting webserver on port ${process.env.PORT}`);
 });
 
-controller.createWebhookEndpoints(app);
+// controller.createWebhookEndpoints(app);
 controller.createHomepageEndpoint(app);
 controller.createOauthEndpoints(app, (err, req, res) => {
   if (err) {
@@ -55,7 +56,7 @@ controller.createOauthEndpoints(app, (err, req, res) => {
 
 app.post('/datto', (req, res) => {
   if (req.body && req.body.authentication && req.body.authentication === process.env.dattoAPIKey) {
-    res.send(req.body && req.body.dattoalert);
+    eventEmitter.emit('dattoAlert', req.body && req.body.dattoalert);
   }
 });
 
@@ -95,37 +96,41 @@ controller.storage.teams.all((err, teams) => {
     }
   });
 });
+
 controller.on('rtm_open', (bot) => {
   winston.log('info', '** The RTM api just connected!');
-  // Handle listening for Zapier webhook'd Datto event here and replying
-  const msgTemplate = {
-    username: 'dorian',
-    icon_emoji: ':panda_face:',
-    text: "", // text from webhook will go here
-    attachments: [
-      {
-        fallback: "Tell everyone you're on it!",
-        callback_id: 'alertResponse',
-        actions: [
-          {
-            name: 'reset',
-            text: 'Reset Alert',
-            value: 'reset',
-            type: 'button'
-          },
-          {
-            name: 'ticket',
-            text: 'Create ticket',
-            value: 'ticket',
-            type: 'button'
-          }
-        ],
-      },
-    ],
-  };
-  bot.say(msgTemplate);
 
+  // Handle listening for Zapier webhook'd Datto event here and replying
+  eventEmitter.on('dattoAlert', (alert) => {
+    const msgTemplate = {
+      username: 'dorian',
+      icon_emoji: ':panda_face:',
+      text: alert, // text from webhook will go here
+      attachments: [
+        {
+          fallback: "New Datto Alert!",
+          callback_id: 'alertResponse',
+          actions: [
+            {
+              name: 'reset',
+              text: 'Reset Alert',
+              value: 'reset',
+              type: 'button'
+            },
+            {
+              name: 'ticket',
+              text: 'Create ticket',
+              value: 'ticket',
+              type: 'button'
+            }
+          ],
+        },
+      ],
+    };
+    bot.say(msgTemplate);
+  });
 });
+
 controller.on('rtm_close', (bot) => {
   winston.log('warn', '** The RTM api just closed');
   bot.startRTM((err) => {
