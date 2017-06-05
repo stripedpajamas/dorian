@@ -79,21 +79,6 @@ controller.on('create_bot', (bot) => {
     bot.startRTM((err) => {
       if (!err) {
         trackBot(bot);
-        bot.api.channels.list({}, (err, response) => {
-          if (err) {
-            console.log('Could not get channels');
-          }
-          console.log('Got channel list!');
-          if (response.hasOwnProperty('channels') && response.ok) {
-            console.log('Gonna get some channel stuffs.');
-            const total = response.channels.length;
-            for (let i = 0; i < total; i++) {
-              const channel = response.channels[i];
-              channelList[bot.config.token].push({name: channel.name, id: channel.id});
-            }
-            console.log('final channel list:', JSON.stringify(channelList));
-          }
-        });
       }
     });
   }
@@ -120,7 +105,25 @@ controller.storage.teams.all((err, teams) => {
 controller.on('rtm_open', (bot) => {
   winston.log('info', '** The RTM api just connected!');
 
-  const alertsChannel = channelList[bot.config.token].find(ch => ch.name === 'alerts');
+  let alertsChannel;
+
+  bot.api.channels.list({}, (err, response) => {
+    if (err) {
+      console.log('Could not get channels');
+    }
+    console.log('Got channel list!');
+    if (response.hasOwnProperty('channels') && response.ok) {
+      console.log('Gonna get some channel stuffs.');
+      const total = response.channels.length;
+      for (let i = 0; i < total; i++) {
+        const channel = response.channels[i];
+        channelList[bot.config.token].push({name: channel.name, id: channel.id});
+      }
+      console.log('final channel list:', JSON.stringify(channelList));
+      alertsChannel = channelList[bot.config.token].find(ch => ch.name === 'alerts');
+    }
+  });
+
 
   // Handle listening for Zapier webhook'd Datto event here and replying
   eventEmitter.on('dattoAlert', (alert) => {
