@@ -103,52 +103,42 @@ controller.storage.teams.all((err, teams) => {
 controller.on('rtm_open', (bot) => {
   winston.log('info', '** The RTM api just connected!');
 
-  const channelList = [];
-  let alertsChannel;
-
-  bot.api.channels.list({}, (err, response) => {
-    if (response.hasOwnProperty('channels') && response.ok) {
-      const total = response.channels.length;
-      for (let i = 0; i < total; i++) {
-        const channel = response.channels[i];
-        channelList.push({ name: channel.name, id: channel.id });
-      }
-      alertsChannel = channelList.find(ch => ch.name === 'alerts');
-    }
-  });
-
-
-  // Handle listening for Zapier webhook'd Datto event here and replying
   eventEmitter.on('dattoAlert', (alert) => {
-    const msgTemplate = {
-      username: 'dorian',
-      icon_emoji: ':panda_face:',
-      channel: alertsChannel.id,
-      color: 'danger',
-      text: 'Datto Alert Received', // text from webhook will go here
-      attachments: [
-        {
-          fallback: alert,
-          callback_id: 'alertResponse',
-          title: alert,
-          actions: [
-            {
-              name: 'reset',
-              text: 'Reset Alert',
-              value: 'reset',
-              type: 'button'
-            },
-            {
-              name: 'ticket',
-              text: 'Create ticket',
-              value: 'ticket',
-              type: 'button'
-            }
-          ],
-        },
-      ],
-    };
-    bot.say(msgTemplate);
+    bot.api.channels.list({}, (err, response) => {
+      if (response.hasOwnProperty('channels') && response.ok) {
+        const alertsChannel = response.channels.find(ch => ch.name === 'alerts');
+          // Handle listening for Zapier webhook'd Datto event here and replying
+            const msgTemplate = {
+              username: 'dorian',
+              icon_emoji: ':panda_face:',
+              channel: alertsChannel.id,
+              color: 'danger',
+              text: 'Datto Alert Received', // text from webhook will go here
+              attachments: [
+                {
+                  fallback: alert,
+                  callback_id: 'alertResponse',
+                  title: alert,
+                  actions: [
+                    {
+                      name: 'reset',
+                      text: 'Reset Alert',
+                      value: 'reset',
+                      type: 'button'
+                    },
+                    {
+                      name: 'ticket',
+                      text: 'Create ticket',
+                      value: 'ticket',
+                      type: 'button'
+                    }
+                  ],
+                },
+              ],
+            };
+            bot.say(msgTemplate);
+      }
+    });
   });
 });
 
