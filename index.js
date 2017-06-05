@@ -11,7 +11,7 @@ if (!process.env.slackClientID || !process.env.slackClientSecret ||
   process.exit(1);
 }
 
-const Botkit = require('botkit');
+const Botkit = require('./lib/botkit');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoStorage = require('botkit-storage-mongo')({mongoUri: process.env.mongoUri});
@@ -48,7 +48,7 @@ app.listen(process.env.PORT, () => {
   winston.log(`** Starting webserver on port ${process.env.PORT}`);
 });
 
-// controller.createWebhookEndpoints(app);
+controller.createWebhookEndpoints(app);
 controller.createHomepageEndpoint(app);
 controller.createOauthEndpoints(app, (err, req, res) => {
   if (err) {
