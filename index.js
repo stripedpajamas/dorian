@@ -112,13 +112,13 @@ controller.on('rtm_open', (bot) => {
               username: 'dorian',
               icon_emoji: ':panda_face:',
               channel: alertsChannel.id,
-              color: 'danger',
               text: 'Datto Alert Received', // text from webhook will go here
               attachments: [
                 {
                   fallback: alert,
                   callback_id: 'alertResponse',
                   title: alert,
+                  color: 'danger',
                   actions: [
                     {
                       name: 'reset',
@@ -153,7 +153,7 @@ controller.on('rtm_close', (bot) => {
 
 controller.on('interactive_message_callback', function(bot, message) {
   bot.api.users.info({user: message.user}, function(err, info){
-    var buttonPresser = null;
+    let buttonPresser = null;
     if (err) {
       winston.log('error: ** could not get user name of button presser');
     } else {
@@ -185,7 +185,8 @@ controller.on('interactive_message_callback', function(bot, message) {
         }
       };
       const fs_host = process.env.ticketSystemUrl;
-      request(freshservice(fs_host, process.env.ticketSystemAPIKey, 'POST', '/helpdesk/tickets.json', ticketObject), function(err, res, body) {
+      const apiKey = process.env.ticketSystemAPIKey;
+      request(freshservice(fs_host, apiKey, 'POST', 'helpdesk/tickets.json', ticketObject), (err, res, body) => {
         winston.log('info: ** Sending new ticket request to FreshService');
         if (err) {
           winston.log('error: ** Ticket creation failed:', err);
@@ -205,7 +206,7 @@ controller.on('interactive_message_callback', function(bot, message) {
             ]
           });
         }
-      })
+      });
     }
   });
 });
