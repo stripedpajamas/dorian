@@ -31,11 +31,11 @@ const connectionInfo = {
 };
 const controller = Botkit.slackbot({
   storage: mongoStorage,
-  debug: false,
+  debug: true,
 }).configureSlackApp({
   clientId: connectionInfo.slackClientID,
   clientSecret: connectionInfo.slackClientSecret,
-  scopes: ['bot', 'users:read'],
+  scopes: ['bot', 'channels:read', 'users:read'],
 });
 
 // setup webserver
