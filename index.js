@@ -80,12 +80,18 @@ controller.on('create_bot', (bot) => {
       if (!err) {
         trackBot(bot);
         bot.api.channels.list({}, (err, response) => {
+          if (err) {
+            console.log('Could not get channels');
+          }
+          console.log('Got channel list!');
           if (response.hasOwnProperty('channels') && response.ok) {
+            console.log('Gonna get some channel stuffs.');
             const total = response.channels.length;
             for (let i = 0; i < total; i++) {
               const channel = response.channels[i];
               channelList[bot.config.token].push({name: channel.name, id: channel.id});
             }
+            console.log('final channel list:', JSON.stringify(channelList));
           }
         });
       }
