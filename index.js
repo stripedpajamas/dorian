@@ -190,7 +190,6 @@ controller.on('interactive_message_callback', function(bot, message) {
         if (err) {
           winston.log('error: ** Ticket creation failed:', err);
         }
-        winston.log('info: ** Got this response from FreshService:', res.statusCode);
         if (typeof body === 'object' && body.status) {
           bot.replyInteractive(message, {
             attachments: [
