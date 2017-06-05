@@ -3,7 +3,6 @@
  */
 
 const winston = require('winston');
-const dotenv = require('dotenv').config();
 
 if (!process.env.slackClientID || !process.env.slackClientSecret ||
   !process.env.ticketSystemUrl || !process.env.PORT || !process.env.mongoUri ||
