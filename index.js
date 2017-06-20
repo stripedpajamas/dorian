@@ -106,7 +106,7 @@ controller.on('rtm_open', (bot) => {
   eventEmitter.on('dattoAlert', (alert) => {
     bot.api.channels.list({}, (err, response) => {
       if (response.hasOwnProperty('channels') && response.ok) {
-        const alertsChannel = response.channels.find(ch => ch.name === 'alerts');
+        const alertsChannel = response.channels.find(ch => ch.name === 'datto_alerts');
           // Handle listening for Zapier webhook'd Datto event here and replying
             const msgTemplate = {
               username: 'dorian',
