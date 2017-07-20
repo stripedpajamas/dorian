@@ -58,7 +58,7 @@ controller.createOauthEndpoints(app, (err, req, res) => {
 
 app.post('/datto', (req, res) => {
   if (req.body && req.body.authentication && req.body.authentication === process.env.dattoAPIKey) {
-    eventEmitter.emit('dattoAlert', req.body && req.body.dattoalert);
+    eventEmitter.emit('dattoAlert', { device: req.body.device, reason: req.body.reason, agent: req.body.agent });
   }
   res.send('Thanks!');
 });
@@ -103,7 +103,7 @@ controller.storage.teams.all((err, teams) => {
 controller.on('rtm_open', (bot) => {
   winston.log('info', '** The RTM api just connected!');
 
-  eventEmitter.on('dattoAlert', (alert) => {
+  eventEmitter.on('dattoAlert', ({ device, reason, agent }) => {
     bot.api.channels.list({}, (err, response) => {
       if (response.hasOwnProperty('channels') && response.ok) {
         const alertsChannel = response.channels.find(ch => ch.name === 'datto_alerts');
@@ -115,9 +115,21 @@ controller.on('rtm_open', (bot) => {
               text: 'Datto Alert Received', // text from webhook will go here
               attachments: [
                 {
-                  fallback: alert,
+                  fallback: `${device} :: ${agent} :: ${reason}`,
                   callback_id: 'alertResponse',
-                  title: alert,
+                  title: `Datto Alert for ${device}`,
+                  fields: [
+                    {
+                      title: 'Agent',
+                      value: agent,
+                      short: true,
+                    },
+                    {
+                      title: 'Reason',
+                      value: reason,
+                      short: false,
+                    },
+                  ],
                   color: 'danger',
                   actions: [
                     {
@@ -166,9 +178,11 @@ controller.on('interactive_message_callback', function(bot, message) {
             fallback: 'Alert reset',
             text: message.original_message.attachments[0].title,
             color: 'good',
-            fields: [{
-              title: `Alert has been reset${buttonPresser ? ' by ' + buttonPresser : '!'}`
-            }],
+            fields: [
+              {
+                title: `Alert has been reset${buttonPresser ? ' by ' + buttonPresser : '!'}`
+              }
+            ],
           }
         ]
       });
@@ -198,10 +212,12 @@ controller.on('interactive_message_callback', function(bot, message) {
                 fallback: 'Ticket created',
                 text: message.original_message.attachments[0].title,
                 color: 'good',
-                fields: [{
-                  title: `Alert made into a ticket${buttonPresser ? ' by ' + buttonPresser : '!'}`,
-                  value: 'https://' + fs_host + '/helpdesk/tickets/' + body.item.helpdesk_ticket.display_id
-                }],
+                fields: [
+                  {
+                    title: `Alert made into a ticket${buttonPresser ? ' by ' + buttonPresser : '!'}`,
+                    value: 'https://' + fs_host + '/helpdesk/tickets/' + body.item.helpdesk_ticket.display_id
+                  }
+                ],
               }
             ]
           });
